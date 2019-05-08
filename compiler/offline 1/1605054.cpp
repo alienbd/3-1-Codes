@@ -151,14 +151,23 @@ public:
     {
         int hashValue = getHashValue(name);
 
-        symbolInfo *temp ;
+        symbolInfo *temp,*temp2 ;
 
         temp = &slist[hashValue];
 
         while(temp->next != nullptr)
         {
             if(temp->next->getName() == name){
+                temp2 = temp->next;
                 temp->next = temp->next->next;
+                temp2->print();
+                cout<<endl;
+                free(temp2);
+                if(temp2 == 0) cout<<"null";
+                else {
+                    temp2->print();
+                    cout<<endl;
+                }
                 return ;
             }
             temp = temp->next;
@@ -215,12 +224,11 @@ int main()
     st.lookUp("5");
     st.lookUp("alien");
 
+    cout<<"deleting foo: ";
     st.Delete("foo");
     st.print();
     cout<<endl;
-    st.Delete("A");
-    st.print();
-    cout<<endl;
+    cout<<"deleting alien: ";
     st.Delete("alien");
     st.print();
     cout<<endl;
