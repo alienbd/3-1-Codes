@@ -147,7 +147,7 @@ public:
         //slist->next->print();
     }
 
-    void Delete(string name)
+    bool Delete(string name)
     {
         int hashValue = getHashValue(name);
 
@@ -159,16 +159,12 @@ public:
         {
             if(temp->next->getName() == name){
                 temp2 = temp->next;
+
                 temp->next = temp->next->next;
-                temp2->print();
-                cout<<endl;
+
                 free(temp2);
-                if(temp2 == 0) cout<<"null";
-                else {
-                    temp2->print();
-                    cout<<endl;
-                }
-                return ;
+
+                return true;
             }
             temp = temp->next;
         }
@@ -176,6 +172,7 @@ public:
         if(temp->next == nullptr)
         {
             cout<<"ITEM NOT FOUND";
+            return false;
         }
 
     }
