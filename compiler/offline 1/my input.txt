@@ -1,0 +1,11 @@
+10 7 
+I foo FUNCTION
+I i VAR
+L foo d
+L j f
+I 5 NUMBER
+P A f
+D j f
+D i f
+P A f
+I alien VAR

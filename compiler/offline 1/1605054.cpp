@@ -80,7 +80,7 @@ public:
         return hashValue;
     }
 
-    bool lookUp(string name,int flag=0)
+    symbolInfo* lookUp(string name,int flag=0)
     {
         int position = 0;
         int hashValue = getHashValue(name);
@@ -98,7 +98,7 @@ public:
             {
                 if(flag == 0) cout<<"Found in ScopeTable# 1 at position "<<hashValue<<", "<<position<<endl;
                 //temp->print();
-                return true;
+                return temp;
             }
             //cout<<endl;
         }
@@ -106,7 +106,7 @@ public:
         if(temp->next == nullptr)
         {
             if(flag == 0) cout<<"ITEM NOT FOUND";
-            return false;
+            return nullptr;
         }
 
     }
@@ -117,9 +117,14 @@ public:
         symbolInfo *newItem = new symbolInfo();
         symbolInfo *temp ;
 
-        if(lookUp(name,1) == true )
+        temp = lookUp(name,1);
+
+        if(temp != nullptr )
         {
             cout<<"ITEM ALREADY EXIST"<<endl;
+            //cout<<"item: ";
+            //temp->print();
+            //cout<<endl;
             return ;
         }
 
@@ -140,6 +145,30 @@ public:
         temp->next = newItem;
         cout<<"\tInserted in ScopeTable# 1 at position "<< hashValue<<", "<<position<<endl;
         //slist->next->print();
+    }
+
+    void Delete(string name)
+    {
+        int hashValue = getHashValue(name);
+
+        symbolInfo *temp ;
+
+        temp = &slist[hashValue];
+
+        while(temp->next != nullptr)
+        {
+            if(temp->next->getName() == name){
+                temp->next = temp->next->next;
+                return ;
+            }
+            temp = temp->next;
+        }
+
+        if(temp->next == nullptr)
+        {
+            cout<<"ITEM NOT FOUND";
+        }
+
     }
 
     void print()
@@ -186,7 +215,15 @@ int main()
     st.lookUp("5");
     st.lookUp("alien");
 
-
+    st.Delete("foo");
+    st.print();
+    cout<<endl;
+    st.Delete("A");
+    st.print();
+    cout<<endl;
+    st.Delete("alien");
+    st.print();
+    cout<<endl;
     return 0;
 }
 
