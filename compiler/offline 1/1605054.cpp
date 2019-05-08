@@ -3,17 +3,6 @@
 
 using namespace std;
 
-long long hashFunc(string const& s) {
-    const int p = 31;
-    const int m = 1e9 + 9;
-    long long hash_value = 0;
-    long long p_pow = 1;
-    for (char c : s) {
-        hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
-        p_pow = (p_pow * p) % m;
-    }
-    return hash_value;
-}
 
 class symbolInfo
 {
@@ -67,12 +56,76 @@ public:
         slist = new symbolInfo[capacity];
     }
 
-    void insert(string name,string type,int m)
+    long long hashFunc(string const& s)
     {
+        const int p = 31;
+        const int m = 1e9 + 9;
+        long long hash_value = 0;
+        long long p_pow = 1;
+        for (char c : s)
+        {
+            if(c>='A' && c<='Z') c = c-'A'+'a';
+            else if(c>='0' && c<='9') c = c-'0'+'a';
+            hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
+            p_pow = (p_pow * p) % m;
+        }
+        return hash_value;
+    }
+
+    int getHashValue(string str)
+    {
+        //transform(str.begin(), str.end(), str.begin(), ::tolower);
+        long long hv = hashFunc(str);
+        int hashValue = hv % capacity;
+        return hashValue;
+    }
+
+    bool lookUp(string name,int flag=0)
+    {
+        int position = 0;
+        int hashValue = getHashValue(name);
+
+        symbolInfo *temp ;
+
+        temp = &slist[hashValue];
+
+        while(temp->next != nullptr)
+        {
+            temp = temp->next;
+            position++;
+            //temp->print();
+            if(temp->getName() == name)
+            {
+                if(flag == 0) cout<<"Found in ScopeTable# 1 at position "<<hashValue<<", "<<position<<endl;
+                //temp->print();
+                return true;
+            }
+            //cout<<endl;
+        }
+
+        if(temp->next == nullptr)
+        {
+            if(flag == 0) cout<<"ITEM NOT FOUND";
+            return false;
+        }
+
+    }
+
+    void insert(string name,string type)
+    {
+        int position = 0;
         symbolInfo *newItem = new symbolInfo();
         symbolInfo *temp ;
 
-        temp = &slist[m];
+        if(lookUp(name,1) == true )
+        {
+            cout<<"ITEM ALREADY EXIST"<<endl;
+            return ;
+        }
+
+        int hashValue = getHashValue(name);
+
+        temp = &slist[hashValue];
 
         //cout<<name<<" "<<type<<endl;
         newItem->setName(name);
@@ -82,8 +135,10 @@ public:
         while(temp->next != nullptr)
         {
             temp = temp->next;
+            position++;
         }
         temp->next = newItem;
+        cout<<"\tInserted in ScopeTable# 1 at position "<< hashValue<<", "<<position<<endl;
         //slist->next->print();
     }
 
@@ -91,7 +146,8 @@ public:
     {
         symbolInfo * temp;
 
-        for(int i=0;i<capacity;i++){
+        for(int i=0; i<capacity; i++)
+        {
             temp = &slist[i];
             cout<<"hash table: "<<i<<"-->  ";
             while(temp->next != nullptr)
@@ -110,29 +166,34 @@ int main()
     //freopen("output.txt","w",stdout);
     ios_base::sync_with_stdio(0);
     int n,m,hashValue;
-    long long hv;
     cin>>n>>m;
+
     scopeTable st(m);
 
     for(int i=0; i<n; i++)
     {
-        string command,name,type,namelower;
+        string command,name,type;
         cin>>command>>name>>type;
-        namelower = name;
-        //cout<<command<<" "<<name<<" "<<type<<endl;
 
 
-        transform(namelower.begin(), namelower.end(), namelower.begin(), ::tolower);
-        hv = hashFunc(namelower);
-        hashValue = hv % m;
-        //cout<<hashValue<<endl;
-
-        st.insert(name,type,hashValue);
+        st.insert(name,type);
     }
 
     st.print();
+    cout<<endl;
 
+    st.lookUp("foo");
+    st.lookUp("5");
+    st.lookUp("alien");
 
 
     return 0;
 }
+
+
+/*
+    st.lookUp("foo");
+    st.lookUp("5");
+    st.lookUp("alien");
+
+*/
