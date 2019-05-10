@@ -218,6 +218,13 @@ public:
             cout<<endl;
         }
     }
+
+    ~scopeTable()
+    {
+        if(slist != nullptr){
+            free(slist);
+        }
+    }
 };
 
 class SymbolTable
