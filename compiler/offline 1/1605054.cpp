@@ -3,6 +3,7 @@
 
 using namespace std;
 
+int scopeCount;
 
 class symbolInfo
 {
@@ -38,7 +39,7 @@ public:
 
     void print()
     {
-        cout<<"<"<<this->name<<":"<<this->type<<">\t";
+        cout<<"< "<<this->name<<":"<<this->type<<" >\t";
     }
 
 
@@ -48,12 +49,21 @@ class scopeTable
 {
     int capacity;
     symbolInfo *slist;
+    scopeTable *parentScope;
 
 public:
-    scopeTable(int cap)
+    int id;
+    scopeTable(int cap, scopeTable *parent)
     {
         capacity = cap;
         slist = new symbolInfo[capacity];
+        parentScope = parent;
+        id = ++scopeCount;
+    }
+
+    scopeTable* getParentScope()
+    {
+        return parentScope;
     }
 
     long long hashFunc(string const& s)
@@ -62,11 +72,14 @@ public:
         const int m = 1e9 + 9;
         long long hash_value = 0;
         long long p_pow = 1;
-        for (char c : s)
-        {
-            if(c>='A' && c<='Z') c = c-'A'+'a';
-            else if(c>='0' && c<='9') c = c-'0'+'a';
-            hash_value = (hash_value + (c - 'a' + 1) * p_pow) % m;
+
+        int length = s.length();
+
+        for (int i = 0; i < length; i++){
+            //if(c>='A' && c<='Z') c = c-'A'+'a';
+            //else if(c>='0' && c<='9') c = c-'0'+'a';
+            //else c = c-'!'+'a';
+            hash_value = (((hash_value + (unsigned long long )s[i]) * p_pow) % m)<<i;
             p_pow = (p_pow * p) % m;
         }
         return hash_value;
@@ -92,26 +105,26 @@ public:
         while(temp->next != nullptr)
         {
             temp = temp->next;
-            position++;
             //temp->print();
             if(temp->getName() == name)
             {
-                if(flag == 0) cout<<"Found in ScopeTable# 1 at position "<<hashValue<<", "<<position<<endl;
+                if(flag == 0 or flag == 2) cout<<"\n\t"<<name<<" Found in ScopeTable #"<<this->id<<" at position "<<hashValue<<", "<<position<<endl;
                 //temp->print();
                 return temp;
             }
+            position++;
             //cout<<endl;
         }
 
         if(temp->next == nullptr)
         {
-            if(flag == 0) cout<<"ITEM NOT FOUND";
+            if(flag == 0) cout<<"\n\t"<<name<<" NOT FOUND"<<endl;
             return nullptr;
         }
 
     }
 
-    void insert(string name,string type)
+    bool insert(string name,string type)
     {
         int position = 0;
         symbolInfo *newItem = new symbolInfo();
@@ -121,11 +134,11 @@ public:
 
         if(temp != nullptr )
         {
-            cout<<"ITEM ALREADY EXIST"<<endl;
+            cout<<"\n\t"<<name<<" already exits in current ScopeTable"<<endl;
             //cout<<"item: ";
             //temp->print();
             //cout<<endl;
-            return ;
+            return false;
         }
 
         int hashValue = getHashValue(name);
@@ -143,13 +156,17 @@ public:
             position++;
         }
         temp->next = newItem;
-        cout<<"\tInserted in ScopeTable# 1 at position "<< hashValue<<", "<<position<<endl;
+        cout<<"\n\tInserted ";
+        newItem->print();
+        cout<<"\b in ScopeTable #"<<this->id<<" at position "<< hashValue<<", "<<position<<endl;
+        return true;
         //slist->next->print();
     }
 
     bool Delete(string name)
     {
         int hashValue = getHashValue(name);
+        int position = 0;
 
         symbolInfo *temp,*temp2 ;
 
@@ -157,21 +174,28 @@ public:
 
         while(temp->next != nullptr)
         {
-            if(temp->next->getName() == name){
+            if(temp->next->getName() == name)
+            {
                 temp2 = temp->next;
 
                 temp->next = temp->next->next;
 
                 free(temp2);
 
+                cout<<"\n\t"<<name<<" Found in "<<hashValue<<", "<<position<<" in current ScopeTable"<<endl;
+
+
+                cout<<"\n\tDeleted entry at "<<hashValue<<", "<<position<<" from current ScopeTable"<<endl;
+
                 return true;
             }
             temp = temp->next;
+            position++;
         }
 
         if(temp->next == nullptr)
         {
-            cout<<"ITEM NOT FOUND";
+            cout<<"\n\t"<<name<<" NOT FOUND"<<endl;
             return false;
         }
 
@@ -181,10 +205,11 @@ public:
     {
         symbolInfo * temp;
 
+        cout<<"\nScope Table # "<<id<<endl;
         for(int i=0; i<capacity; i++)
         {
             temp = &slist[i];
-            cout<<"hash table: "<<i<<"-->  ";
+            cout<<"\t"<<i<<"-->  ";
             while(temp->next != nullptr)
             {
                 temp = temp->next;
@@ -195,41 +220,156 @@ public:
     }
 };
 
-int main()
+class SymbolTable
 {
-    //freopen("input.txt","r",stdin);
-    //freopen("output.txt","w",stdout);
-    ios_base::sync_with_stdio(0);
-    int n,m,hashValue;
-    cin>>n>>m;
+    scopeTable *currentScope;
+    int capacity;
 
-    scopeTable st(m);
-
-    for(int i=0; i<n; i++)
+public:
+    SymbolTable(int m)
     {
-        string command,name,type;
-        cin>>command>>name>>type;
-
-
-        st.insert(name,type);
+        capacity = m;
+        currentScope = new scopeTable(capacity,nullptr);
     }
 
-    st.print();
-    cout<<endl;
+    void enterScope()
+    {
+        scopeTable *cur = currentScope;
+        currentScope= new scopeTable(capacity,cur);
+        /*scopeCount++;
+        currentScope->id = scopeCount;*/
+        cout<<"\n\tNEW SCOPE TABLE WITH ID "<<currentScope->id<<" created"<<endl;
+    }
 
-    st.lookUp("foo");
-    st.lookUp("5");
-    st.lookUp("alien");
+    void exitScope()
+    {
+        scopeTable *cur = currentScope;
+        int id = cur->id;
+        currentScope = currentScope->getParentScope();
+        scopeCount--;
+        delete cur;
+        cout<<"\n\tScopeTable with id "<<id<<" removed"<<endl;
+    }
 
-    cout<<"deleting foo: ";
-    st.Delete("foo");
-    st.print();
-    cout<<endl;
-    cout<<"deleting alien: ";
-    st.Delete("alien");
-    st.print();
-    cout<<endl;
-    return 0;
+    bool insert(string name,string type)
+    {
+        return currentScope->insert(name,type);
+    }
+
+    bool remove(string name)
+    {
+        return currentScope->Delete(name);
+    }
+
+    symbolInfo* lookUp(string name)
+    {
+        scopeTable *temp;
+        temp = currentScope;
+
+        symbolInfo *si;
+        while(temp != nullptr)
+        {
+            si = temp->lookUp(name,2);
+
+            if(si != nullptr)
+            {
+                return si;
+            }
+
+            temp = temp->getParentScope();
+        }
+
+        if(temp == nullptr)
+        {
+            cout<<"\n\t"<<name<<" NOT FOUND"<<endl;
+        }
+    }
+
+    void print()
+    {
+        currentScope->print();
+    }
+
+    void printAll()
+    {
+        scopeTable *temp;
+        temp = currentScope;
+        while(temp != nullptr)
+        {
+            temp->print();
+            temp = temp->getParentScope();
+            cout<<endl;
+        }
+    }
+
+};
+
+int main()
+{
+    freopen("my input.txt","r",stdin);
+    //freopen("myoutput.txt","w",stdout);
+    ios_base::sync_with_stdio(0);
+    int n,m,hashValue;
+    string command;
+    cin>>m;
+
+    SymbolTable st(m);
+
+    while(cin>>command)
+    {
+        string name,type;
+
+        if(command == "I")
+        {
+            cin>>name>>type;
+            //cout<<"\n\tInserting Item...";
+            st.insert(name,type);
+        }
+
+        else if(command == "L")
+        {
+            cin>>name;
+            //cout<<"\n\tSearching Item...";
+            st.lookUp(name);
+        }
+
+        else if(command == "D")
+        {
+            cin>>name;
+            //cout<<"\n\tDeleting Item...";
+            st.remove(name);
+        }
+
+        else if(command == "P")
+        {
+            cin>>name;
+            if(name == "A")
+            {
+                //cout<<"\nPrinting All Scope Tables...";
+                st.printAll();
+            }
+
+            else if(name == "C")
+            {
+                //cout<<"\nPrinting Current Scope Table...";
+                st.print();
+            }
+        }
+
+        else if(command == "S")
+        {
+            //cout<<"\n\tCreating New Scope Table...";
+            st.enterScope();
+        }
+
+        else if(command == "E")
+        {
+            //cout<<"\n\tExiting Current Scope Table...";
+            st.exitScope();
+        }
+    }
+
+     return 0;
 }
 
 
@@ -238,4 +378,25 @@ int main()
     st.lookUp("5");
     st.lookUp("alien");
 
+*/
+
+/*
+    st.lookUp("foo");
+    st.lookUp("5");
+    st.lookUp("alien");
+    cout<<"deleting foo: ";
+    st.remove("foo");
+    st.print();
+    cout<<endl;
+    cout<<"deleting alien: ";
+    st.remove("alien");
+    st.print();
+    cout<<endl;
+    */
+
+/*st.print();
+cout<<endl;
+
+st.printAll();
+cout<<endl;
 */

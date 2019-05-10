@@ -1,11 +1,22 @@
-10 7 
+7
 I foo FUNCTION
 I i VAR
-L foo d
-L j f
+L foo
+L j
 I 5 NUMBER
-P A f
-D j f
-D i f
-P A f
-I alien VAR
+P A
+D j
+D i
+P A
+S
+I <= RELOP
+I == RELOP
+P A
+I <= RELOP
+I foo FUNCTION
+D ==
+P A
+E
+I t t
+I k k
+P A

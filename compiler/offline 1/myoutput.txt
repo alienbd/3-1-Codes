@@ -1,0 +1,23 @@
+	Inserted in ScopeTable #1 at position 4, 0
+	Inserted in ScopeTable #1 at position 2, 0
+Found in ScopeTable#1 at position 4, 1
+ITEM NOT FOUND	Inserted in ScopeTable #1 at position 6, 0
+Scope Table # 1
+	0-->  
+	1-->  
+	2-->  <i:VAR>	
+	3-->  
+	4-->  <foo:FUNCTION>	
+	5-->  
+	6-->  <5:NUMBER>	
+
+ITEM NOT FOUNDScope Table # 1
+	0-->  
+	1-->  
+	2-->  
+	3-->  
+	4-->  <foo:FUNCTION>	
+	5-->  
+	6-->  <5:NUMBER>	
+
+NEW SCOPE TABLE WITH ID 2 created
